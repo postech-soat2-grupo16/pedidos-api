@@ -23,7 +23,7 @@ func NewOrderController(useCase interfaces.OrderUseCase, r *chi.Mux) *OrderContr
 		r.Get("/{id}", controller.GetByID)
 		r.Put("/{id}", controller.Update)
 		r.Delete("/{id}", controller.Delete)
-		r.Patch("/{id}", controller.PatchPedidoStatus)
+		r.Patch("/{id}", controller.PatchOrderStatus)
 	})
 	return &controller
 }
@@ -161,7 +161,7 @@ func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure	404
 // @Failure	400
 // @Router		/pedidos/{id} [patch]
-func (c *OrderController) PatchPedidoStatus(w http.ResponseWriter, r *http.Request) {
+func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Request) {
 	var p order.Order
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
