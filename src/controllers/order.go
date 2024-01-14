@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 	"net/http"
 	"strconv"
 
@@ -175,7 +174,7 @@ func (c *OrderController) PatchPedidoStatus(w http.ResponseWriter, r *http.Reque
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	order, err := c.useCase.UpdateOrderStatus(string(id), entities.Status(p.Status))
+	order, err := c.useCase.UpdateOrderStatus(string(id), p.Status)
 	if err != nil {
 		if util.IsDomainError(err) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
