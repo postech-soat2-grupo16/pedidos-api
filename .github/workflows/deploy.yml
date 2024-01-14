@@ -1,0 +1,64 @@
+name: Deploy to Amazon ECS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v4
+
+      #AWS CREDENTIALS
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'false'
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: docker_build_tag_push
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        run: |
+          docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "ECR_IMAGE=$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+      #Terraform execution
+      #Runs ECS Service
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init
+
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve        
+        env:
+          TF_VAR_ecr_image: ${{ env.ECR_IMAGE }}
+          TF_VAR_execution_role_ecs: ${{ secrets.ECS_EXECUTION_ROLE }}
+          TF_VAR_vpc_id: ${{ vars.VPC_ID }}
+          TF_VAR_subnet_a: ${{ vars.SUBNET_A }}
+          TF_VAR_subnet_b: ${{ vars.SUBNET_B }}
+          TF_VAR_sg_load_balancer: ${{ vars.SG_LOAD_BALANCER }}
+          TF_VAR_ecs_cluster: ${{ vars.ECS_CLUSTER }}
+          TF_VAR_sg_cluster_ecs: ${{ vars.SG_CLUSTER_ECS }}
+          TF_VAR_target_group_arn: ${{ vars.TARGET_GROUP_ARN }}
