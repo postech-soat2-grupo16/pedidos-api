@@ -2,6 +2,7 @@ package order
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
@@ -54,7 +55,33 @@ func (g *Gateway) Delete(orderID string) error {
 }
 
 func (g *Gateway) GetByID(orderID string) (*entities.Order, error) {
-	return nil, nil
+
+	//Creating a DynamoDB Query Input Search by Key (order id)
+	fetch := &dynamodb.QueryInput{
+		TableName:              &g.TableName,
+		KeyConditionExpression: aws.String("order_id = :order_id"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":order_id": {
+				S: aws.String(orderID),
+			},
+		},
+	}
+
+	// Fetching the Order using query
+	result, err := g.repository.Query(fetch)
+	if err != nil {
+		fmt.Printf("Error fetching order ID: %s\nerror: %s", orderID, err)
+		return nil, err
+	}
+
+	// Unmarshalling the DynamoDB item into Orders
+	var orders []entities.Order
+	if err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &orders); err != nil {
+		fmt.Printf("Error Unmarshalling order ID: %s\nerror: %s", orderID, err)
+		return nil, err
+	}
+
+	return &orders[0], nil
 }
 
 func (g *Gateway) GetAll(conds ...interface{}) (orders []entities.Order, err error) {

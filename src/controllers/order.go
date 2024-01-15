@@ -57,9 +57,9 @@ func (c *OrderController) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Param		id	path		string	true	"Order ID"
 // @Success	200	{object}	order.Order
 // @Failure	404
-// @Router		/orders/{order_id} [get]
+// @Router		/orders/{id} [get]
 func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
-	orderId := chi.URLParam(r, "order_id")
+	orderId := chi.URLParam(r, "id")
 	if orderId == "" {
 		http.Error(w, util.NewErrorDomain("order_id URL Param is missing").Error(), http.StatusBadRequest)
 		return
@@ -118,7 +118,7 @@ func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 // @Success	200		{object}	order.Order
 // @Failure	404
 // @Failure	400
-// @Router		/orders/{order_id} [put]
+// @Router		/orders/{id} [put]
 func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
 	var p order.Order
 	err := json.NewDecoder(r.Body).Decode(&p)
@@ -161,7 +161,7 @@ func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
 // @Success	200		{object}	order.Order
 // @Failure	404
 // @Failure	400
-// @Router		/orders/{order_id} [patch]
+// @Router		/orders/{id} [patch]
 func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Request) {
 	var p order.Order
 	err := json.NewDecoder(r.Body).Decode(&p)
@@ -202,7 +202,7 @@ func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Reques
 // @Param		id	path	string	true	"Order ID"
 // @Success	204
 // @Failure	500
-// @Router		/orders/{order_id} [delete]
+// @Router		/orders/{id} [delete]
 func (c *OrderController) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
