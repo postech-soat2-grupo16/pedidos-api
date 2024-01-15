@@ -17,15 +17,13 @@ func NewUseCase(orderGateway interfaces.OrderGatewayI) UseCase {
 	return UseCase{orderGateway: orderGateway}
 }
 
-func (o UseCase) List(status string) (orders []entities.Order, err error) {
-	if status != "" {
-		order := entities.Order{
-			Status: entities.Status(status),
-		}
-		return o.orderGateway.GetAll(order)
+func (o UseCase) List(clientID, status string) (orders *[]entities.Order, err error) {
+	orders, err = o.orderGateway.GetAll(clientID)
+	if err != nil {
+		return nil, err
 	}
 
-	return o.orderGateway.GetAll()
+	return orders, nil
 }
 
 func (o UseCase) Create(order *entities.Order) (*entities.Order, error) {

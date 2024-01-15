@@ -40,12 +40,24 @@ func NewOrderController(useCase interfaces.OrderUseCase, r *chi.Mux) *OrderContr
 // @Failure	500
 // @Router		/orders [get]
 func (c *OrderController) GetAll(w http.ResponseWriter, r *http.Request) {
+	clientID := r.URL.Query().Get("client_id")
 	status := r.URL.Query().Get("status")
-	orders, err := c.useCase.List(status)
+
+	ordersFetched, err := c.useCase.List(clientID, status)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	json.NewEncoder(w).Encode(orders)
+
+	var orders []*order.Order
+
+	if ordersFetched != nil {
+		for _, orderFetched := range *ordersFetched {
+			orders = append(orders, order.FromUseCaseEntity(&orderFetched))
+		}
+		json.NewEncoder(w).Encode(orders)
+	}
+
+	json.NewEncoder(w).Encode([]*order.Order{})
 }
 
 // @Summary	Gets an order by ID
@@ -73,7 +85,7 @@ func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	json.NewEncoder(w).Encode(order.OrderFromEntity(orderFetched))
+	json.NewEncoder(w).Encode(order.FromUseCaseEntity(orderFetched))
 }
 
 // @Summary	New order
@@ -104,7 +116,7 @@ func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(order.OrderFromEntity(orderCreated))
+	json.NewEncoder(w).Encode(order.FromUseCaseEntity(orderCreated))
 }
 
 // @Summary	Updates an order

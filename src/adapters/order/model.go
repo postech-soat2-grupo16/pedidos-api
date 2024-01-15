@@ -51,7 +51,7 @@ func orderItemFromEntity(orderedItems []entities.OrderedItem) (itemList []Ordere
 	return itemList
 }
 
-func OrderFromEntity(order *entities.Order) *Order {
+func FromUseCaseEntity(order *entities.Order) *Order {
 	return &Order{
 		OrderID:      order.OrderID,
 		Status:       string(order.Status),

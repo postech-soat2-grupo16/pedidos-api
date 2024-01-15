@@ -9,5 +9,5 @@ type OrderGatewayI interface {
 	Update(orderID string, order *entities.Order) (*entities.Order, error)
 	Delete(orderID string) error
 	GetByID(orderID string) (*entities.Order, error)
-	GetAll(conds ...interface{}) ([]entities.Order, error)
+	GetAll(clientID string) (*[]entities.Order, error)
 }
