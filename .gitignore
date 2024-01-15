@@ -80,3 +80,8 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# GoLand-specific files
+.idea/
+
+# GoLand workspace file
+*.iml
