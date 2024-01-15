@@ -2,10 +2,11 @@ package order
 
 import (
 	"errors"
-
+	"github.com/google/uuid"
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 	"github.com/postech-soat2-grupo16/pedidos-api/interfaces"
 	"gorm.io/gorm"
+	"time"
 )
 
 type UseCase struct {
@@ -27,8 +28,14 @@ func (o UseCase) List(status string) (orders []entities.Order, err error) {
 	return o.orderGateway.GetAll()
 }
 
-func (o UseCase) Create(pedido entities.Order) (*entities.Order, error) {
-	return o.orderGateway.Save(pedido)
+func (o UseCase) Create(order *entities.Order) (*entities.Order, error) {
+	var now = time.Now().String()
+
+	order.OrderID = uuid.New().String()
+	order.CreatedAt = now
+	order.UpdatedAt = ""
+
+	return o.orderGateway.Save(order)
 }
 
 func (o UseCase) GetByID(orderID string) (*entities.Order, error) {
@@ -40,7 +47,7 @@ func (o UseCase) GetByID(orderID string) (*entities.Order, error) {
 	return order, nil
 }
 
-func (o UseCase) Update(orderID string, order entities.Order) (*entities.Order, error) {
+func (o UseCase) Update(orderID string, order *entities.Order) (*entities.Order, error) {
 	if _, err := o.orderGateway.GetByID(orderID); errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -57,7 +64,7 @@ func (o UseCase) UpdateOrderStatus(orderID string, orderStatus string) (*entitie
 	}
 
 	order.Status = entities.Status(orderStatus)
-	return o.orderGateway.Update(orderID, *order)
+	return o.orderGateway.Update(orderID, order)
 }
 
 func (o UseCase) Delete(orderID string) error {

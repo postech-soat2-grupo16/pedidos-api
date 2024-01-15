@@ -1,70 +1,62 @@
 package order
 
 import (
-	"log"
-
+	"fmt"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-type Repository struct {
-	repository *gorm.DB
+type Gateway struct {
+	TableName  string
+	repository *dynamodb.DynamoDB
 }
 
-func NewGateway(repository *gorm.DB) *Repository {
-	return &Repository{repository: repository}
+func NewGateway(repository *dynamodb.DynamoDB) *Gateway {
+	return &Gateway{
+		TableName:  "order_table_2",
+		repository: repository,
+	}
 }
 
-func (o *Repository) Save(order entities.Order) (*entities.Order, error) {
-	result := o.repository.Create(&order)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return nil, result.Error
+func (g *Gateway) Save(order *entities.Order) (*entities.Order, error) {
+
+	//Marshaling order to a DynamoDB MAP
+	item, err := dynamodbattribute.MarshalMap(order)
+	if err != nil {
+		fmt.Println("Error marshaling to DynamoDB attribute map:", err)
+		return nil, err
 	}
 
-	return &order, nil
+	//Creating a DynamoDB Input Item
+	input := &dynamodb.PutItemInput{
+		TableName: &g.TableName,
+		Item:      item,
+	}
+
+	//Saving Input Item
+	_, err = g.repository.PutItem(input)
+	if err != nil {
+		fmt.Println("Error inserting item:", err)
+		return nil, err
+	}
+
+	fmt.Println("Item inserted successfully")
+	return order, nil
 }
 
-func (o *Repository) Update(orderID string, order entities.Order) (*entities.Order, error) {
-	order.OrderID = orderID
-	for i := range order.Items {
-		order.Items[i].ItemID = orderID
-	}
-
-	result := o.repository.Session(&gorm.Session{FullSaveAssociations: false}).Updates(&order)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return nil, result.Error
-	}
-	return &order, nil
+func (g *Gateway) Update(orderID string, order *entities.Order) (*entities.Order, error) {
+	return nil, nil
 }
 
-func (o *Repository) Delete(orderID string) error {
-	order := entities.Order{
-		OrderID: orderID,
-	}
-	result := o.repository.Preload("Items.ItemID").Delete(&order)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return result.Error
-	}
-
+func (g *Gateway) Delete(orderID string) error {
 	return nil
 }
 
-func (o *Repository) GetByID(orderID string) (*entities.Order, error) {
-	order := entities.Order{
-		OrderID: orderID,
-	}
-	result := o.repository.Preload(clause.Associations).Preload("Items.ItemID").Preload("Pagamentos").First(&order)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return &order, nil
+func (g *Gateway) GetByID(orderID string) (*entities.Order, error) {
+	return nil, nil
 }
 
-func (o *Repository) GetAll(conds ...interface{}) (orders []entities.Order, err error) {
-	return orders, err
+func (g *Gateway) GetAll(conds ...interface{}) (orders []entities.Order, err error) {
+	return nil, nil
 }

@@ -23,8 +23,8 @@ import (
 // @license.name	Apache 2.0
 // @license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 func main() {
-	api.SetupDB()
-	r := api.SetupRouter()
+	db := api.SetupDB()
+	r := api.SetupRouter(db)
 
 	server := &http.Server{
 		Addr:              ":8001",

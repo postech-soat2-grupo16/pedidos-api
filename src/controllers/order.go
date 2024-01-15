@@ -86,13 +86,13 @@ func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Failure	400
 // @Router		/pedidos [post]
 func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
-	var p order.Order
-	err := json.NewDecoder(r.Body).Decode(&p)
+	var orderModel order.Order
+	err := json.NewDecoder(r.Body).Decode(&orderModel)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	order, err := c.useCase.Create(p.ToEntity())
+	orderCreated, err := c.useCase.Create(orderModel.ToUseCaseEntity())
 	if err != nil {
 		if util.IsDomainError(err) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -103,7 +103,7 @@ func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(order)
+	json.NewEncoder(w).Encode(order.OrderFromEntity(orderCreated))
 }
 
 // @Summary	Update a order
@@ -131,7 +131,7 @@ func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	order, err := c.useCase.Update(string(id), p.ToEntity())
+	order, err := c.useCase.Update(string(id), p.ToUseCaseEntity())
 	if err != nil {
 		if util.IsDomainError(err) {
 			w.WriteHeader(http.StatusUnprocessableEntity)

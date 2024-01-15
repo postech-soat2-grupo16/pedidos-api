@@ -6,10 +6,12 @@ import (
 
 type Order struct {
 	OrderID      string        `json:"order_id"`
-	OrderedItems []OrderedItem `json:"ordered_items"`
-	Notes        string        `json:"notes"`
 	ClientID     string        `json:"client_id"`
 	Status       string        `json:"status"`
+	OrderedItems []OrderedItem `json:"ordered_items"`
+	Notes        string        `json:"notes"`
+	CreatedAt    string        `json:"created_at"`
+	UpdatedAt    string        `json:"updated_at"`
 }
 
 type OrderedItem struct {
@@ -17,22 +19,46 @@ type OrderedItem struct {
 	Quantity int    `json:"quantity"`
 }
 
-func (o *Order) OrderItemToEntity() (list []entities.OrderedItem) {
-	for _, OrderedItem := range o.OrderedItems {
-		list = append(list, entities.OrderedItem{
-			ItemID:   OrderedItem.ItemID,
-			Quantity: OrderedItem.Quantity,
+func (o *Order) orderItemToEntity() (itemList []entities.OrderedItem) {
+	for _, orderedItem := range o.OrderedItems {
+		itemList = append(itemList, entities.OrderedItem{
+			ItemID:   orderedItem.ItemID,
+			Quantity: orderedItem.Quantity,
 		})
 	}
-	return list
+	return itemList
 }
 
-func (o *Order) ToEntity() entities.Order {
-	return entities.Order{
-		OrderID:  o.OrderID,
-		Items:    o.OrderItemToEntity(),
-		Status:   entities.Status(o.Status),
-		Notes:    o.Notes,
-		ClientID: o.ClientID,
+func (o *Order) ToUseCaseEntity() *entities.Order {
+	return &entities.Order{
+		OrderID:      o.OrderID,
+		Status:       entities.Status(o.Status),
+		OrderedItems: o.orderItemToEntity(),
+		Notes:        o.Notes,
+		ClientID:     o.ClientID,
+		CreatedAt:    o.CreatedAt,
+		UpdatedAt:    o.UpdatedAt,
+	}
+}
+
+func orderItemFromEntity(orderedItems []entities.OrderedItem) (itemList []OrderedItem) {
+	for _, orderedItem := range orderedItems {
+		itemList = append(itemList, OrderedItem{
+			ItemID:   orderedItem.ItemID,
+			Quantity: orderedItem.Quantity,
+		})
+	}
+	return itemList
+}
+
+func OrderFromEntity(order *entities.Order) *Order {
+	return &Order{
+		OrderID:      order.OrderID,
+		Status:       string(order.Status),
+		OrderedItems: orderItemFromEntity(order.OrderedItems),
+		Notes:        order.Notes,
+		ClientID:     order.ClientID,
+		CreatedAt:    order.CreatedAt,
+		UpdatedAt:    order.UpdatedAt,
 	}
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -11,26 +12,25 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-func SetupDB() {
-	external.GetDynamoDbClient()
+func SetupDB() *dynamodb.DynamoDB {
+	return external.GetDynamoDbClient()
 }
 
-func SetupRouter() *chi.Mux {
+func SetupRouter(db *dynamodb.DynamoDB) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(commonMiddleware)
 
-	mapRoutes(r)
+	mapRoutes(r, db)
 
 	return r
 }
 
-func mapRoutes(r *chi.Mux) {
+func mapRoutes(r *chi.Mux, db *dynamodb.DynamoDB) {
 	// Swagger
 	r.Get("/swagger/*", httpSwagger.Handler())
 
-	// Injections
 	// Gateways
-	orderGateway := og.NewGateway(nil)
+	orderGateway := og.NewGateway(db)
 	// Use cases
 	orderUseCase := order.NewUseCase(orderGateway)
 	// Handlers
