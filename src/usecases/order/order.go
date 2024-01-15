@@ -40,7 +40,7 @@ func (o UseCase) Create(order *entities.Order) (*entities.Order, error) {
 
 func (o UseCase) GetByID(orderID string) (*entities.Order, error) {
 	order, err := o.orderGateway.GetByID(orderID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, err
 	}
 

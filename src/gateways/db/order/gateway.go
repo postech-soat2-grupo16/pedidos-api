@@ -74,6 +74,11 @@ func (g *Gateway) GetByID(orderID string) (*entities.Order, error) {
 		return nil, err
 	}
 
+	if len(result.Items) == 0 {
+		fmt.Printf("Order ID: %s does not exist", orderID)
+		return nil, nil
+	}
+
 	// Unmarshalling the DynamoDB item into Orders
 	var orders []entities.Order
 	if err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &orders); err != nil {

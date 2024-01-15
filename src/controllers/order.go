@@ -73,7 +73,7 @@ func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	json.NewEncoder(w).Encode(orderFetched)
+	json.NewEncoder(w).Encode(order.OrderFromEntity(orderFetched))
 }
 
 // @Summary	New order
