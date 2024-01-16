@@ -15,7 +15,7 @@ type Gateway struct {
 
 func NewGateway(repository *dynamodb.DynamoDB) *Gateway {
 	return &Gateway{
-		TableName:  "table_gsi",
+		TableName:  "orders",
 		repository: repository,
 	}
 }
