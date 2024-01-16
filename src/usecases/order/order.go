@@ -1,13 +1,11 @@
 package order
 
 import (
-	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 	"github.com/postech-soat2-grupo16/pedidos-api/interfaces"
 	"github.com/postech-soat2-grupo16/pedidos-api/util"
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -107,17 +105,22 @@ func (o UseCase) Update(orderID string, updatedOrder *entities.Order) (*entities
 	return o.orderGateway.Save(order)
 }
 
-func (o UseCase) UpdateOrderStatus(orderID string, orderStatus string) (*entities.Order, error) {
-	order, err := o.orderGateway.GetByID(orderID)
+func (o UseCase) UpdateOrderStatus(orderID string, orderStatus entities.Status) (*entities.Order, error) {
+	order, err := o.GetByID(orderID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
 		return nil, err
 	}
 
-	order.Status = entities.Status(orderStatus)
-	return o.orderGateway.Update(orderID, order)
+	if order == nil {
+		return nil, nil
+	}
+
+	order.Status = orderStatus
+	if !order.IsStatusValid() {
+		return order, util.NewErrorDomain(fmt.Sprintf("Status %s is not valid", orderStatus))
+	}
+
+	return o.orderGateway.Save(order)
 }
 
 func (o UseCase) Delete(orderID string) error {

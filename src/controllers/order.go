@@ -3,12 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"net/http"
-	"strconv"
-
 	order "github.com/postech-soat2-grupo16/pedidos-api/adapters/order"
+	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 	"github.com/postech-soat2-grupo16/pedidos-api/interfaces"
 	"github.com/postech-soat2-grupo16/pedidos-api/util"
+	"net/http"
 )
 
 type OrderController struct {
@@ -179,19 +178,22 @@ func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure	400
 // @Router		/orders/{id} [patch]
 func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Request) {
-	var p order.Order
-	err := json.NewDecoder(r.Body).Decode(&p)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	orderID := chi.URLParam(r, "id")
+	if orderID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("id URL Param is missing"))
 		return
 	}
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 32)
+
+	var o order.Order
+	err := json.NewDecoder(r.Body).Decode(&o)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("Error parsing request body"))
 		return
 	}
-	order, err := c.useCase.UpdateOrderStatus(string(id), p.Status)
+
+	order, err := c.useCase.UpdateOrderStatus(orderID, entities.Status(o.Status))
 	if err != nil {
 		if util.IsDomainError(err) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -201,10 +203,12 @@ func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Reques
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	if order == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(order)
 }
