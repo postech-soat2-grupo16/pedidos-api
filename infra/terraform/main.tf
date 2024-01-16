@@ -64,10 +64,6 @@ resource "aws_ecs_task_definition" "task_definition_pedidos_api" {
   }
 }
 
-output "task_definition_ecs_arn" {
-  value = aws_ecs_task_definition.task_definition_ecs.arn
-}
-
 resource "aws_ecs_service" "ecs_service_pedidos_api" {
   name                              = "ecs-service-pedidos-api"
   cluster                           = var.ecs_cluster
