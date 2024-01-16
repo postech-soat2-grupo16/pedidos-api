@@ -9,13 +9,9 @@ import (
 )
 
 func GetDynamoDbClient() *dynamodb.DynamoDB {
-	// Specify the endpoint for DynamoDB Local
-	endpoint := "http://localhost:8000"
-
 	// Create a new AWS session
 	sess, err := session.NewSession(&aws.Config{
-		Endpoint: aws.String(endpoint),
-		Region:   aws.String("us-east-1"),
+		Region: aws.String("us-east-1"),
 	})
 	if err != nil {
 		fmt.Println("Error creating session:", err)
