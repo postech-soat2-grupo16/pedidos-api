@@ -31,7 +31,9 @@ jobs:
 
       - name: Generate UUID for image
         id: uuid
-        run: echo "UUID=$(uuidgen)" >> $GITHUB_ENV
+        run: |
+          echo "UUID=$(uuidgen)" >> $GITHUB_ENV
+          echo "uuid - ${{ env.UUID }}"
 
       - name: Build, tag, and push image to Amazon ECR
         id: docker_build_tag_push
@@ -51,7 +53,7 @@ jobs:
       - name: Terraform Init
         run: |
           cd infra/terraform
-          terraform init
+          terraform init -reconfigure
 
       - name: Terraform Apply
         run: |
