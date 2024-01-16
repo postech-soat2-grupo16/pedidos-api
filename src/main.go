@@ -9,9 +9,10 @@ import (
 import (
 	_ "github.com/lib/pq"
 	"github.com/postech-soat2-grupo16/pedidos-api/api"
+	_ "github.com/postech-soat2-grupo16/pedidos-api/docs"
 )
 
-//	@title			Fast Food API
+//	@title			Orders API
 //	@version		1.0
 //	@description	Here you will find everything you need to have the best possible integration with our APIs.
 //	@termsOfService	http://fastfood.io/terms/
@@ -23,11 +24,11 @@ import (
 // @license.name	Apache 2.0
 // @license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 func main() {
-	api.SetupDB()
-	r := api.SetupRouter()
+	db := api.SetupDB()
+	r := api.SetupRouter(db)
 
 	server := &http.Server{
-		Addr:              ":8001",
+		Addr:              ":8000",
 		ReadHeaderTimeout: 3 & time.Second,
 		Handler:           r,
 	}

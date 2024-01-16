@@ -3,12 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"net/http"
-	"strconv"
-
 	order "github.com/postech-soat2-grupo16/pedidos-api/adapters/order"
+	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 	"github.com/postech-soat2-grupo16/pedidos-api/interfaces"
 	"github.com/postech-soat2-grupo16/pedidos-api/util"
+	"net/http"
 )
 
 type OrderController struct {
@@ -23,56 +22,82 @@ func NewOrderController(useCase interfaces.OrderUseCase, r *chi.Mux) *OrderContr
 		r.Get("/{id}", controller.GetByID)
 		r.Put("/{id}", controller.Update)
 		r.Delete("/{id}", controller.Delete)
-		r.Patch("/{id}", controller.PatchPedidoStatus)
+		r.Patch("/{id}", controller.PatchOrderStatus)
+		r.Get("/healthcheck", controller.Ping)
 	})
 	return &controller
 }
 
-// @Summary	Get all orders
+// @Summary	health check endpoint
 //
 // @Tags		Orders
 //
+// @ID			health-check
+// @Success	200
+// @Router		/orders/healtcheck [get]
+func (c *OrderController) Ping(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+// GetAll @Summary	Gets all orders by filters
+//
+// @Tags		Orders
 // @ID			get-all-orders
 // @Produce	json
-// @Param       status  query       string  false   "Optional Filter by Status"
-// @Success	200	{object}	order.Pedido
+//
+// @Param       client_id  query       string  false   "Optional Filter by client_id"
+// @Param       status  query       string  false   "Optional Filter by order status"
+//
+// @Success	200	{object}	order.Order
 // @Failure	500
-// @Router		/pedidos [get]
+// @Router		/orders [get]
 func (c *OrderController) GetAll(w http.ResponseWriter, r *http.Request) {
+	clientID := r.URL.Query().Get("client_id")
 	status := r.URL.Query().Get("status")
-	orders, err := c.useCase.List(status)
+
+	ordersFetched, err := c.useCase.List(clientID, status)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	json.NewEncoder(w).Encode(orders)
+
+	var orders []*order.Order
+
+	if ordersFetched != nil {
+		for _, orderFetched := range *ordersFetched {
+			orders = append(orders, order.FromUseCaseEntity(&orderFetched))
+		}
+		json.NewEncoder(w).Encode(orders)
+	}
+
+	json.NewEncoder(w).Encode([]*order.Order{})
 }
 
-// @Summary	Get a order by ID
+// @Summary	Gets an order by ID
 //
 // @Tags		Orders
 //
 // @ID			get-order-by-id
 // @Produce	json
 // @Param		id	path		string	true	"Order ID"
-// @Success	200	{object}	order.Pedido
+// @Success	200	{object}	order.Order
 // @Failure	404
-// @Router		/pedidos/{id} [get]
+// @Router		/orders/{id} [get]
 func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 32)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	orderID := chi.URLParam(r, "id")
+	if orderID == "" {
+		http.Error(w, util.NewErrorDomain("order_id URL Param is missing").Error(), http.StatusBadRequest)
 		return
 	}
-	pedido, err := c.useCase.GetByID(string(id))
+
+	orderFetched, err := c.useCase.GetByID(orderID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	if pedido == nil {
+	if orderFetched == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	json.NewEncoder(w).Encode(pedido)
+	json.NewEncoder(w).Encode(order.FromUseCaseEntity(orderFetched))
 }
 
 // @Summary	New order
@@ -81,18 +106,19 @@ func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
 //
 // @ID			create-order
 // @Produce	json
-// @Param		data	body		order.Pedido	true	"Order data"
-// @Success	200		{object}	order.Pedido
+// @Param		data	body		order.Order	true	"Order payload"
+// @Success	200		{object}	order.Order
 // @Failure	400
-// @Router		/pedidos [post]
+// @Router		/orders [post]
 func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
-	var p order.Order
-	err := json.NewDecoder(r.Body).Decode(&p)
+	var orderModel order.Order
+	err := json.NewDecoder(r.Body).Decode(&orderModel)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("Error parsing request body"))
 		return
 	}
-	order, err := c.useCase.Create(p.ToEntity())
+	orderCreated, err := c.useCase.Create(orderModel.ToUseCaseEntity())
 	if err != nil {
 		if util.IsDomainError(err) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -103,35 +129,38 @@ func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(order)
+	json.NewEncoder(w).Encode(order.FromUseCaseEntity(orderCreated))
 }
 
-// @Summary	Update a order
+// @Summary	Updates an order
 //
 // @Tags		Orders
 //
 // @ID			update-order
 // @Produce	json
 // @Param		id		path		string	true	"Order ID"
-// @Param		data	body		order.Pedido	true	"Order data"
-// @Success	200		{object}	order.Pedido
+// @Param		data	body		order.Order	true	"Order payload"
+// @Success	200		{object}	order.Order
 // @Failure	404
 // @Failure	400
-// @Router		/pedidos/{id} [put]
+// @Router		/orders/{id} [put]
 func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
-	var p order.Order
-	err := json.NewDecoder(r.Body).Decode(&p)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	orderID := chi.URLParam(r, "id")
+	if orderID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("id URL Param is missing"))
 		return
 	}
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 32)
+
+	var o order.Order
+	err := json.NewDecoder(r.Body).Decode(&o)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("Error parsing request body"))
 		return
 	}
-	order, err := c.useCase.Update(string(id), p.ToEntity())
+
+	order, err := c.useCase.Update(orderID, o.ToUseCaseEntity())
 	if err != nil {
 		if util.IsDomainError(err) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -149,32 +178,35 @@ func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(order)
 }
 
-// @Summary	Patch status of a order
+// @Summary	Patches order's status
 //
 // @Tags		Orders
 //
 // @ID			update-status-order
 // @Produce	json
 // @Param		id		path		string	true	"Order ID"
-// @Param		data	body		order.Pedido	true	"Pedido with updated status"
-// @Success	200		{object}	order.Pedido
+// @Param		data	body		order.Order	true	"Order with updated status"
+// @Success	200		{object}	order.Order
 // @Failure	404
 // @Failure	400
-// @Router		/pedidos/{id} [patch]
-func (c *OrderController) PatchPedidoStatus(w http.ResponseWriter, r *http.Request) {
-	var p order.Order
-	err := json.NewDecoder(r.Body).Decode(&p)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+// @Router		/orders/{id} [patch]
+func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Request) {
+	orderID := chi.URLParam(r, "id")
+	if orderID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("id URL Param is missing"))
 		return
 	}
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 32)
+
+	var o order.Order
+	err := json.NewDecoder(r.Body).Decode(&o)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("Error parsing request body"))
 		return
 	}
-	order, err := c.useCase.UpdateOrderStatus(string(id), p.Status)
+
+	order, err := c.useCase.UpdateOrderStatus(orderID, entities.Status(o.Status))
 	if err != nil {
 		if util.IsDomainError(err) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -184,15 +216,17 @@ func (c *OrderController) PatchPedidoStatus(w http.ResponseWriter, r *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	if order == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(order)
 }
 
-// @Summary	Delete a order by ID
+// @Summary	Deletes an order by ID
 //
 // @Tags		Orders
 //
@@ -201,16 +235,21 @@ func (c *OrderController) PatchPedidoStatus(w http.ResponseWriter, r *http.Reque
 // @Param		id	path	string	true	"Order ID"
 // @Success	204
 // @Failure	500
-// @Router		/pedidos/{id} [delete]
+// @Router		/orders/{id} [delete]
 func (c *OrderController) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 32)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	orderID := chi.URLParam(r, "id")
+	if orderID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("id URL Param is missing"))
 		return
 	}
-	err = c.useCase.Delete(string(id))
+
+	err := c.useCase.Delete(orderID)
 	if err != nil {
+		if util.IsDomainError(err) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

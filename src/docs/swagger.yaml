@@ -1,0 +1,190 @@
+definitions:
+  Order.Order:
+    properties:
+      client_id:
+        type: string
+      created_at:
+        type: string
+      notes:
+        type: string
+      order_id:
+        type: string
+      ordered_items:
+        items:
+          $ref: '#/definitions/Order.OrderedItem'
+        type: array
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  Order.OrderedItem:
+    properties:
+      item_id:
+        type: string
+      quantity:
+        type: integer
+    type: object
+info:
+  contact:
+    email: support@fastfood.io
+    name: API Support
+    url: http://www.fastfood.io/support
+  description: Here you will find everything you need to have the best possible integration
+    with our APIs.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://fastfood.io/terms/
+  title: Orders API
+  version: "1.0"
+paths:
+  /orders:
+    get:
+      operationId: get-all-orders
+      parameters:
+      - description: Optional Filter by client_id
+        in: query
+        name: client_id
+        type: string
+      - description: Optional Filter by order status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Order.Order'
+        "500":
+          description: Internal Server Error
+      tags:
+      - Orders
+    post:
+      operationId: create-order
+      parameters:
+      - description: Order payload
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/Order.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Order.Order'
+        "400":
+          description: Bad Request
+      summary: New order
+      tags:
+      - Orders
+  /orders/{id}:
+    delete:
+      operationId: delete-order-by-id
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+      summary: Deletes an order by ID
+      tags:
+      - Orders
+    get:
+      operationId: get-order-by-id
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Order.Order'
+        "404":
+          description: Not Found
+      summary: Gets an order by ID
+      tags:
+      - Orders
+    patch:
+      operationId: update-status-order
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order with updated status
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/Order.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Order.Order'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Patches order's status
+      tags:
+      - Orders
+    put:
+      operationId: update-order
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order payload
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/Order.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Order.Order'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Updates an order
+      tags:
+      - Orders
+  /orders/healtcheck:
+    get:
+      operationId: health-check
+      responses:
+        "200":
+          description: OK
+      summary: health check endpoint
+      tags:
+      - Orders
+swagger: "2.0"

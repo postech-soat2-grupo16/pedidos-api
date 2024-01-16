@@ -1,70 +1,171 @@
 package order
 
 import (
-	"log"
-
+	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-type Repository struct {
-	repository *gorm.DB
+type Gateway struct {
+	TableName  string
+	repository *dynamodb.DynamoDB
 }
 
-func NewGateway(repository *gorm.DB) *Repository {
-	return &Repository{repository: repository}
+func NewGateway(repository *dynamodb.DynamoDB) *Gateway {
+	return &Gateway{
+		TableName:  "table_gsi",
+		repository: repository,
+	}
 }
 
-func (o *Repository) Save(order entities.Order) (*entities.Order, error) {
-	result := o.repository.Create(&order)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return nil, result.Error
+func (g *Gateway) Save(order *entities.Order) (*entities.Order, error) {
+
+	//Marshaling order to a DynamoDB MAP
+	item, err := dynamodbattribute.MarshalMap(order)
+	if err != nil {
+		fmt.Println("Error marshaling to DynamoDB attribute map:", err)
+		return nil, err
 	}
 
-	return &order, nil
+	//Creating a DynamoDB Input Item
+	input := &dynamodb.PutItemInput{
+		TableName: &g.TableName,
+		Item:      item,
+	}
+
+	//Saving Input Item
+	_, err = g.repository.PutItem(input)
+	if err != nil {
+		fmt.Println("Error inserting item:", err)
+		return nil, err
+	}
+
+	fmt.Println("Item inserted successfully")
+	return order, nil
 }
 
-func (o *Repository) Update(orderID string, order entities.Order) (*entities.Order, error) {
-	order.OrderID = orderID
-	for i := range order.Items {
-		order.Items[i].ItemID = orderID
-	}
-
-	result := o.repository.Session(&gorm.Session{FullSaveAssociations: false}).Updates(&order)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return nil, result.Error
-	}
-	return &order, nil
+func (g *Gateway) Update(orderID string, order *entities.Order) (*entities.Order, error) {
+	return nil, nil
 }
 
-func (o *Repository) Delete(orderID string) error {
-	order := entities.Order{
-		OrderID: orderID,
+func (g *Gateway) Delete(order *entities.Order) error {
+
+	// Create the key parameter for the deleting operation
+	input := &dynamodb.DeleteItemInput{
+		TableName: &g.TableName,
+		Key: map[string]*dynamodb.AttributeValue{
+			"order_id": {
+				S: aws.String(order.OrderID),
+			},
+			"client_id": {
+				S: aws.String(order.ClientID),
+			},
+		},
 	}
-	result := o.repository.Preload("Items.ItemID").Delete(&order)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return result.Error
+
+	// Deleting operation
+	_, err := g.repository.DeleteItem(input)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (o *Repository) GetByID(orderID string) (*entities.Order, error) {
-	order := entities.Order{
-		OrderID: orderID,
-	}
-	result := o.repository.Preload(clause.Associations).Preload("Items.ItemID").Preload("Pagamentos").First(&order)
-	if result.Error != nil {
-		return nil, result.Error
+func (g *Gateway) GetByID(orderID string) (*entities.Order, error) {
+
+	//Creating a DynamoDB Query Input Search by Key (order id)
+	fetch := &dynamodb.QueryInput{
+		TableName:              &g.TableName,
+		KeyConditionExpression: aws.String("order_id = :order_id"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":order_id": {
+				S: aws.String(orderID),
+			},
+		},
 	}
 
-	return &order, nil
+	// Fetching the Order using query
+	result, err := g.repository.Query(fetch)
+	if err != nil {
+		fmt.Printf("Error fetching order ID: %s\nerror: %s", orderID, err)
+		return nil, err
+	}
+
+	if len(result.Items) == 0 {
+		fmt.Printf("Order ID: %s does not exist", orderID)
+		return nil, nil
+	}
+
+	// Unmarshalling the DynamoDB item into Orders
+	var orders []entities.Order
+	if err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &orders); err != nil {
+		fmt.Printf("Error Unmarshalling order ID: %s\nerror: %s", orderID, err)
+		return nil, err
+	}
+
+	return &orders[0], nil
 }
 
-func (o *Repository) GetAll(conds ...interface{}) (orders []entities.Order, err error) {
-	return orders, err
+func (g *Gateway) GetAll() (orders *[]entities.Order, err error) {
+
+	// Scanning the table
+	params := &dynamodb.ScanInput{
+		TableName: &g.TableName,
+	}
+
+	// Perform Scan operation
+	result, err := g.repository.Scan(params)
+	if err != nil {
+		fmt.Printf("Error scanning table %s - Error: %s", g.TableName, err)
+		return
+	}
+
+	if len(result.Items) == 0 {
+		fmt.Printf("Table %s is empty", g.TableName)
+		return orders, nil
+	}
+
+	// Unmarshalling the DynamoDB item into Orders
+	if err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &orders); err != nil {
+		fmt.Printf("Error Unmarshalling table data: %s\nerror: %s", g.TableName, err)
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func (g *Gateway) GetAllByClientID(clientID string) (orders *[]entities.Order, err error) {
+
+	// Querying table by client_id - GSI
+	query := &dynamodb.QueryInput{
+		TableName:              &g.TableName,
+		IndexName:              aws.String("ClientIdIndex"),
+		KeyConditionExpression: aws.String("client_id = :client_id"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":client_id": {S: aws.String(clientID)},
+		},
+	}
+
+	// Perform Query operation
+	result, err := g.repository.Query(query)
+	if err != nil {
+		fmt.Printf("Error scanning table %s - Error: %s", g.TableName, err)
+		return
+	}
+
+	if len(result.Items) == 0 {
+		fmt.Printf("Table %s is empty", g.TableName)
+		return orders, nil
+	}
+
+	// Unmarshalling the DynamoDB item into Orders
+	if err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &orders); err != nil {
+		fmt.Printf("Error Unmarshalling table data: %s\nerror: %s", g.TableName, err)
+		return nil, err
+	}
+
+	return orders, nil
 }

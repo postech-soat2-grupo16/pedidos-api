@@ -45,9 +45,9 @@ resource "aws_ecs_task_definition" "task_definition_pedidos_api" {
         logDriver = "awslogs",
         options = {
           awslogs-create-group  = "true",
-          awslogs-group         = "my-ecs-logs",
+          awslogs-group         = "pedidos-api-container",
           awslogs-region        = "us-east-1",
-          awslogs-stream-prefix = "awslogs-container"
+          awslogs-stream-prefix = "pedidos"
         }
       },
     }

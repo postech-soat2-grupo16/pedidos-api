@@ -29,11 +29,15 @@ jobs:
         with:
           mask-password: 'false'
 
+      - name: Generate UUID for image
+        id: uuid
+        run: echo "::set-output name=uuid::$(uuidgen)"
+
       - name: Build, tag, and push image to Amazon ECR
         id: docker_build_tag_push
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: "order-api-${{ steps.uuid.outputs.uuid }}"
           REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
           docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
@@ -45,12 +49,12 @@ jobs:
       #Runs ECS Service
       - name: Terraform Init
         run: |
-          cd terraform
+          cd infra/terraform
           terraform init
 
       - name: Terraform Apply
         run: |
-          cd terraform
+          cd infra/terraform
           terraform apply -auto-approve        
         env:
           TF_VAR_ecr_image: ${{ env.ECR_IMAGE }}
