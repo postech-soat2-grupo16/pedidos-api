@@ -28,11 +28,6 @@ variable "subnet_b" {
   default = "value"
 }
 
-variable "sg_load_balancer" {
-  type    = string
-  default = "value"
-}
-
 variable "ecr_image" {
   description = "ECR Image"
   type        = string
@@ -64,8 +59,8 @@ variable "sg_cluster_ecs" {
   default = "value"
 }
 
-variable "target_group_arn" {
-  description = "Target Group ARN"
+variable "lb_arn" {
+  description = "Load Balancer ARN"
   type      = string
   sensitive = true
 }

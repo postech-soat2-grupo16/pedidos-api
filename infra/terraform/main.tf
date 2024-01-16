@@ -14,6 +14,51 @@ terraform {
   }
 }
 
+### Target Group + Load Balancer
+
+resource "aws_lb_target_group" "tg_pedidos_api" {
+  name        = "target-group-pedidos-api"
+  port        = 8000
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = var.vpc_id
+
+  health_check {
+    enabled             = true
+    interval            = 30
+    matcher             = "200-299"
+    path                = "/orders/ping"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 5
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
+  }
+
+  tags = {
+    infra   = "target-group-pedidos-api"
+    service = "pedidos"
+  }
+}
+
+resource "aws_lb_listener" "alb_fastfood_listener" {
+  load_balancer_arn = var.lb_arn
+  port              = 8000
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_pedidos_api.arn
+  }
+
+  tags = {
+    Name    = "alb-listener-pedidos"
+    infra   = "alb-listener-pedidos"
+    service = "pedidos"
+  }
+}
+
+
 ### Task Config ###
 resource "aws_ecs_task_definition" "task_definition_pedidos_api" {
   family                   = "task-definition-pedidos-api"
@@ -83,7 +128,7 @@ resource "aws_ecs_service" "ecs_service_pedidos_api" {
   }
 
   load_balancer {
-    target_group_arn = var.target_group_arn
+    target_group_arn = aws_lb_target_group.tg_pedidos_api.arn
     container_name   = "container-pedidos-api"
     container_port   = 8000
   }
