@@ -18,12 +18,49 @@ func NewUseCase(orderGateway interfaces.OrderGatewayI) UseCase {
 }
 
 func (o UseCase) List(clientID, status string) (orders *[]entities.Order, err error) {
-	orders, err = o.orderGateway.GetAll(clientID)
+
+	if clientID == "" {
+		orders, err = o.getAllOrders()
+	} else {
+		orders, err = o.getAllOrdersByClientID(clientID)
+	}
+
+	if status != "" {
+		orders, err = o.filterOrdersByStatus(status, orders)
+	}
+
+	return orders, nil
+}
+
+func (o UseCase) getAllOrders() (orders *[]entities.Order, err error) {
+	orders, err = o.orderGateway.GetAll()
 	if err != nil {
 		return nil, err
 	}
 
 	return orders, nil
+}
+
+func (o UseCase) getAllOrdersByClientID(clientID string) (orders *[]entities.Order, err error) {
+	orders, err = o.orderGateway.GetAllByClientID(clientID)
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func (o UseCase) filterOrdersByStatus(status string, orders *[]entities.Order) (*[]entities.Order, error) {
+	if orders != nil {
+		var filteredOrders []entities.Order
+		for _, order := range *orders {
+			if string(order.Status) == status {
+				filteredOrders = append(filteredOrders, order)
+			}
+		}
+		return &filteredOrders, nil
+	}
+	return nil, nil
 }
 
 func (o UseCase) Create(order *entities.Order) (*entities.Order, error) {

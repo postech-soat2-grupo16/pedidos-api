@@ -15,7 +15,7 @@ type Gateway struct {
 
 func NewGateway(repository *dynamodb.DynamoDB) *Gateway {
 	return &Gateway{
-		TableName:  "order_table_2",
+		TableName:  "table_gsi",
 		repository: repository,
 	}
 }
@@ -89,15 +89,48 @@ func (g *Gateway) GetByID(orderID string) (*entities.Order, error) {
 	return &orders[0], nil
 }
 
-func (g *Gateway) GetAll(clientID string) (orders *[]entities.Order, err error) {
+func (g *Gateway) GetAll() (orders *[]entities.Order, err error) {
 
 	// Scanning the table
 	params := &dynamodb.ScanInput{
 		TableName: &g.TableName,
 	}
 
-	// Perform the Scan operation
+	// Perform Scan operation
 	result, err := g.repository.Scan(params)
+	if err != nil {
+		fmt.Printf("Error scanning table %s - Error: %s", g.TableName, err)
+		return
+	}
+
+	if len(result.Items) == 0 {
+		fmt.Printf("Table %s is empty", g.TableName)
+		return orders, nil
+	}
+
+	// Unmarshalling the DynamoDB item into Orders
+	if err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &orders); err != nil {
+		fmt.Printf("Error Unmarshalling table data: %s\nerror: %s", g.TableName, err)
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func (g *Gateway) GetAllByClientID(clientID string) (orders *[]entities.Order, err error) {
+
+	// Querying table by client_id - GSI
+	query := &dynamodb.QueryInput{
+		TableName:              &g.TableName,
+		IndexName:              aws.String("ClientIdIndex"),
+		KeyConditionExpression: aws.String("client_id = :client_id"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":client_id": {S: aws.String(clientID)},
+		},
+	}
+
+	// Perform Query operation
+	result, err := g.repository.Query(query)
 	if err != nil {
 		fmt.Printf("Error scanning table %s - Error: %s", g.TableName, err)
 		return
