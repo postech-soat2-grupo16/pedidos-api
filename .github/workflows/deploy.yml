@@ -33,7 +33,6 @@ jobs:
         id: uuid
         run: |
           echo "UUID=$(uuidgen)" >> $GITHUB_ENV
-          echo "uuid - ${{ env.UUID }}"
 
       - name: Build, tag, and push image to Amazon ECR
         id: docker_build_tag_push
@@ -42,6 +41,7 @@ jobs:
           IMAGE_TAG: "orders-api-${{ env.UUID }}"
           REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
+          echo "uuid - ${{ env.UUID }}"
           cd src
           docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
