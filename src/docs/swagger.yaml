@@ -60,7 +60,6 @@ paths:
             $ref: '#/definitions/Order.Order'
         "500":
           description: Internal Server Error
-      summary: Gets all orders by filters
       tags:
       - Orders
     post:

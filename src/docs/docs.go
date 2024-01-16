@@ -32,7 +32,6 @@ const docTemplate = `{
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Gets all orders by filters",
                 "operationId": "get-all-orders",
                 "parameters": [
                     {

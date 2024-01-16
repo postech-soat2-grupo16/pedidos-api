@@ -9,6 +9,7 @@ import (
 import (
 	_ "github.com/lib/pq"
 	"github.com/postech-soat2-grupo16/pedidos-api/api"
+	_ "github.com/postech-soat2-grupo16/pedidos-api/docs"
 )
 
 //	@title			Orders API
