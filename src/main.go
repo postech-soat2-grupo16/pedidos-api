@@ -28,7 +28,7 @@ func main() {
 	r := api.SetupRouter(db)
 
 	server := &http.Server{
-		Addr:              ":8001",
+		Addr:              ":8000",
 		ReadHeaderTimeout: 3 & time.Second,
 		Handler:           r,
 	}
