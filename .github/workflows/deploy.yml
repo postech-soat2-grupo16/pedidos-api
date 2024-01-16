@@ -31,15 +31,16 @@ jobs:
 
       - name: Generate UUID for image
         id: uuid
-        run: echo "::set-output name=uuid::$(uuidgen)"
+        run: echo "UUID=$(uuidgen)" >> $GITHUB_ENV
 
       - name: Build, tag, and push image to Amazon ECR
         id: docker_build_tag_push
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: "order-api-${{ steps.uuid.outputs.uuid }}"
+          IMAGE_TAG: "orders-api-${{ env.UUID }}"
           REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
+          cd src
           docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
