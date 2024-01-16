@@ -15,6 +15,7 @@ type Order struct {
 }
 
 func (p *Order) IsStatusValid() bool {
-	status := []Status{CreatedOrdersStatus, ReceivedOrderStatus, CookingOrderStatus, ReadyOrderStatus, DeliveredOrderStatus, DoneOrderStatus}
+	status := []Status{CreatedOrdersStatus, ReceivedOrderStatus, CookingOrderStatus, ReadyOrderStatus,
+		DeliveredOrderStatus, DoneOrderStatus, ApprovedPaymentOrderStatus, DeclinedPaymentOrderStatus}
 	return slices.Contains(status, p.Status)
 }

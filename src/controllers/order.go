@@ -71,13 +71,13 @@ func (c *OrderController) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure	404
 // @Router		/orders/{id} [get]
 func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
-	orderId := chi.URLParam(r, "id")
-	if orderId == "" {
+	orderID := chi.URLParam(r, "id")
+	if orderID == "" {
 		http.Error(w, util.NewErrorDomain("order_id URL Param is missing").Error(), http.StatusBadRequest)
 		return
 	}
 
-	orderFetched, err := c.useCase.GetByID(orderId)
+	orderFetched, err := c.useCase.GetByID(orderID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -132,19 +132,22 @@ func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure	400
 // @Router		/orders/{id} [put]
 func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
-	var p order.Order
-	err := json.NewDecoder(r.Body).Decode(&p)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	orderID := chi.URLParam(r, "id")
+	if orderID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("id URL Param is missing"))
 		return
 	}
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 32)
+
+	var o order.Order
+	err := json.NewDecoder(r.Body).Decode(&o)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("Error parsing request body"))
 		return
 	}
-	order, err := c.useCase.Update(string(id), p.ToUseCaseEntity())
+
+	order, err := c.useCase.Update(orderID, o.ToUseCaseEntity())
 	if err != nil {
 		if util.IsDomainError(err) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
