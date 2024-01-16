@@ -23,8 +23,20 @@ func NewOrderController(useCase interfaces.OrderUseCase, r *chi.Mux) *OrderContr
 		r.Put("/{id}", controller.Update)
 		r.Delete("/{id}", controller.Delete)
 		r.Patch("/{id}", controller.PatchOrderStatus)
+		r.Get("/healthcheck", controller.Ping)
 	})
 	return &controller
+}
+
+// @Summary	health check endpoint
+//
+// @Tags		Orders
+//
+// @ID			health-check
+// @Success	200	{object}
+// @Router		/orders/healtcheck [get]
+func (c *OrderController) Ping(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 // @Summary	Gets all orders by filters
