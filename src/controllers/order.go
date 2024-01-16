@@ -33,20 +33,21 @@ func NewOrderController(useCase interfaces.OrderUseCase, r *chi.Mux) *OrderContr
 // @Tags		Orders
 //
 // @ID			health-check
-// @Success	200	{object}
+// @Success	200
 // @Router		/orders/healtcheck [get]
 func (c *OrderController) Ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// @Summary	Gets all orders by filters
+// GetAll @Summary	Gets all orders by filters
 //
 // @Tags		Orders
-//
 // @ID			get-all-orders
 // @Produce	json
+//
 // @Param       client_id  query       string  false   "Optional Filter by client_id"
 // @Param       status  query       string  false   "Optional Filter by order status"
+//
 // @Success	200	{object}	order.Order
 // @Failure	500
 // @Router		/orders [get]

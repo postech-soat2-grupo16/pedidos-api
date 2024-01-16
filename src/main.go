@@ -11,7 +11,7 @@ import (
 	"github.com/postech-soat2-grupo16/pedidos-api/api"
 )
 
-//	@title			Fast Food API
+//	@title			Orders API
 //	@version		1.0
 //	@description	Here you will find everything you need to have the best possible integration with our APIs.
 //	@termsOfService	http://fastfood.io/terms/
