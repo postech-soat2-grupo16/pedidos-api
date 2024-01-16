@@ -50,7 +50,27 @@ func (g *Gateway) Update(orderID string, order *entities.Order) (*entities.Order
 	return nil, nil
 }
 
-func (g *Gateway) Delete(orderID string) error {
+func (g *Gateway) Delete(order *entities.Order) error {
+
+	// Create the key parameter for the deleting operation
+	input := &dynamodb.DeleteItemInput{
+		TableName: &g.TableName,
+		Key: map[string]*dynamodb.AttributeValue{
+			"order_id": {
+				S: aws.String(order.OrderID),
+			},
+			"client_id": {
+				S: aws.String(order.ClientID),
+			},
+		},
+	}
+
+	// Deleting operation
+	_, err := g.repository.DeleteItem(input)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

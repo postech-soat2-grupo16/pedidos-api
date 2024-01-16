@@ -121,5 +121,14 @@ func (o UseCase) UpdateOrderStatus(orderID string, orderStatus string) (*entitie
 }
 
 func (o UseCase) Delete(orderID string) error {
-	return o.orderGateway.Delete(orderID)
+	order, err := o.GetByID(orderID)
+	if err != nil {
+		return err
+	}
+
+	if order == nil {
+		return util.NewErrorDomain(fmt.Sprintf("Order ID %s not found", orderID))
+	}
+
+	return o.orderGateway.Delete(order)
 }

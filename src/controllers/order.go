@@ -102,7 +102,8 @@ func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 	var orderModel order.Order
 	err := json.NewDecoder(r.Body).Decode(&orderModel)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("Error parsing request body"))
 		return
 	}
 	orderCreated, err := c.useCase.Create(orderModel.ToUseCaseEntity())
@@ -219,14 +220,19 @@ func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Reques
 // @Failure	500
 // @Router		/orders/{id} [delete]
 func (c *OrderController) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.ParseInt(idStr, 10, 32)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	orderID := chi.URLParam(r, "id")
+	if orderID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(util.NewErrorDomain("id URL Param is missing"))
 		return
 	}
-	err = c.useCase.Delete(string(id))
+
+	err := c.useCase.Delete(orderID)
 	if err != nil {
+		if util.IsDomainError(err) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
