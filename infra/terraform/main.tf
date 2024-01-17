@@ -14,7 +14,7 @@ terraform {
   }
 }
 
-### Target Group + Load Balancer
+### Target Group + Listener
 
 resource "aws_lb_target_group" "tg_pedidos_api" {
   name        = "target-group-pedidos-api"
@@ -41,12 +41,18 @@ resource "aws_lb_target_group" "tg_pedidos_api" {
   }
 }
 
-resource "aws_lb_listener" "alb_fastfood_listener" {
-  load_balancer_arn = var.lb_arn
-  port              = 8000
-  protocol          = "HTTP"
+# Listener Rule that forwards the request to pedidos-api TG
+resource "aws_lb_listener_rule" "listener_pedidos_api" {
+  listener_arn = var.alb_fastfood_listener_arn
+  priority     = 100
 
-  default_action {
+  condition {
+    path_pattern {
+      values = ["/orders*"]
+    }
+  }
+
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.tg_pedidos_api.arn
   }
@@ -104,7 +110,7 @@ resource "aws_ecs_task_definition" "task_definition_pedidos_api" {
   }
 
   tags = {
-    infra = "task-definition-pedidos"
+    infra    = "task-definition-pedidos"
     services = "pedidos"
   }
 }
@@ -134,7 +140,7 @@ resource "aws_ecs_service" "ecs_service_pedidos_api" {
   }
 
   tags = {
-    infra = "ecs-service-pedidos"
+    infra    = "ecs-service-pedidos"
     services = "pedidos"
   }
 }

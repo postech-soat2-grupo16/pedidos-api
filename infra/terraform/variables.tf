@@ -64,3 +64,9 @@ variable "lb_arn" {
   type      = string
   sensitive = true
 }
+
+variable "alb_fastfood_listener_arn" {
+  description = "Default Listener ALB"
+  type        = string
+  sensitive = true
+}
