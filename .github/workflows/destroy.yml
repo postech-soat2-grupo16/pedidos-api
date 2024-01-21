@@ -43,3 +43,4 @@ jobs:
           TF_VAR_sg_cluster_ecs: ${{ vars.SG_CLUSTER_ECS }}
           TF_VAR_lb_arn: ${{ secrets.LB_ARN }}
           TF_VAR_alb_fastfood_listener_arn: ${{ secrets.LISTENER_DEFAULT_ARN }}
+          TF_VAR_sqs_url: ${{ secrets.SQS_PEDIDOS_URL }}

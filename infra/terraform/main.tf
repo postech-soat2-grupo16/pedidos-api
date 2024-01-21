@@ -92,6 +92,11 @@ resource "aws_ecs_task_definition" "task_definition_pedidos_api" {
         }
       ]
 
+      environment = [
+        { "name" : "IS_LOCAL", "value" : "false" },
+        { "name" : "QUEUE_URL", "value" : var.sqs_url }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs",
         options = {

@@ -11,10 +11,14 @@ import (
 
 type UseCase struct {
 	orderGateway interfaces.OrderGatewayI
+	queueGateway interfaces.QueueGatewayI
 }
 
-func NewUseCase(orderGateway interfaces.OrderGatewayI) UseCase {
-	return UseCase{orderGateway: orderGateway}
+func NewUseCase(orderGateway interfaces.OrderGatewayI, queueGateway interfaces.QueueGatewayI) UseCase {
+	return UseCase{
+		orderGateway: orderGateway,
+		queueGateway: queueGateway,
+	}
 }
 
 func (o UseCase) List(clientID, status string) (orders *[]entities.Order, err error) {
@@ -69,8 +73,12 @@ func (o UseCase) Create(order *entities.Order) (*entities.Order, error) {
 	order.OrderID = uuid.New().String()
 	order.CreatedAt = now
 	order.UpdatedAt = ""
+	var orderCreated, err = o.orderGateway.Save(order)
+	if err != nil {
+		return nil, err
+	}
 
-	return o.orderGateway.Save(order)
+	return o.queueGateway.SendMessage(orderCreated)
 }
 
 func (o UseCase) GetByID(orderID string) (*entities.Order, error) {

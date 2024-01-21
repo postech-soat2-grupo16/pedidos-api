@@ -12,3 +12,7 @@ type OrderGatewayI interface {
 	GetAll() (*[]entities.Order, error)
 	GetAllByClientID(clientID string) (*[]entities.Order, error)
 }
+
+type QueueGatewayI interface {
+	SendMessage(order *entities.Order) (*entities.Order, error)
+}
