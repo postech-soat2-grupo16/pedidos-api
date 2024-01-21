@@ -81,6 +81,7 @@ override.tf.json
 terraform.rc
 .terraform.lock.*
 plan
+infra/.terraform
 
 # GoLand-specific files
 .idea/

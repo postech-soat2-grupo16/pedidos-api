@@ -32,7 +32,7 @@ variable "ecr_image" {
   description = "ECR Image"
   type        = string
   sensitive   = true
-  default = "null"
+  default     = "null"
 }
 
 variable "execution_role_ecs" {
@@ -43,30 +43,37 @@ variable "execution_role_ecs" {
 
 variable "desired_tasks" {
   description = "Mininum executing tasks"
-  type    = number
-  default = 1
+  type        = number
+  default     = 1
 }
 
 variable "ecs_cluster" {
   description = "Cluster ECS ARN"
-  type = string
-  sensitive = true
+  type        = string
+  sensitive   = true
 }
 
 variable "sg_cluster_ecs" {
   description = "Cluster ECS Security group"
-  type    = string
-  default = "value"
+  type        = string
+  default     = "value"
 }
 
 variable "lb_arn" {
   description = "Load Balancer ARN"
-  type      = string
-  sensitive = true
+  type        = string
+  sensitive   = true
 }
 
 variable "alb_fastfood_listener_arn" {
   description = "Default Listener ALB"
   type        = string
-  sensitive = true
+  sensitive   = true
+}
+
+variable "sqs_url" {
+  description = "SQS Pedidos URL"
+  type        = string
+  sensitive   = true
+  default     = ""
 }

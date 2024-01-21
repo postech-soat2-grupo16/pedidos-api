@@ -2,6 +2,8 @@ package api
 
 import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/postech-soat2-grupo16/pedidos-api/gateways/message"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -16,23 +18,28 @@ func SetupDB() *dynamodb.DynamoDB {
 	return external.GetDynamoDbClient()
 }
 
-func SetupRouter(db *dynamodb.DynamoDB) *chi.Mux {
+func SetupQueue() *sqs.SQS {
+	return external.GetSqsClient()
+}
+
+func SetupRouter(db *dynamodb.DynamoDB, queue *sqs.SQS) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(commonMiddleware)
 
-	mapRoutes(r, db)
+	mapRoutes(r, db, queue)
 
 	return r
 }
 
-func mapRoutes(r *chi.Mux, db *dynamodb.DynamoDB) {
+func mapRoutes(r *chi.Mux, db *dynamodb.DynamoDB, queue *sqs.SQS) {
 	// Swagger
 	r.Get("/swagger/*", httpSwagger.Handler())
 
 	// Gateways
 	orderGateway := og.NewGateway(db)
+	queueGateway := message.NewGateway(queue)
 	// Use cases
-	orderUseCase := order.NewUseCase(orderGateway)
+	orderUseCase := order.NewUseCase(orderGateway, queueGateway)
 	// Handlers
 	_ = controllers.NewOrderController(orderUseCase, r)
 }
