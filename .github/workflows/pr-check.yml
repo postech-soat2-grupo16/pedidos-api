@@ -45,6 +45,7 @@ jobs:
         with:
           port: 9000
           cors: '*'
+          sharedDb: true
 
 
       - name: Test
