@@ -33,6 +33,8 @@ func TestFeatures(t *testing.T) {
 
 func setup() *http.Server {
 	os.Setenv("IS_LOCAL", "true")
+	os.Setenv("AWS_ACCESS_KEY_ID", "test")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", "test")
 	db := api.SetupDB()
 	r := api.SetupRouter(db)
 
