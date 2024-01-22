@@ -24,11 +24,11 @@ func (g *Gateway) SendMessage(order *entities.Order) (*entities.Order, error) {
 	// Convert the struct to a JSON string
 	jsonString, err := json.Marshal(order)
 	if err != nil {
-		fmt.Println("Error parsing order to json string:", err)
+		fmt.Printf("Error parsing order to json string: %s\n", err)
 		return nil, err
 	}
 	stringMessage := string(jsonString)
-	fmt.Printf("Sending message: %s", jsonString)
+	fmt.Printf("Sending message: %s\n", jsonString)
 
 	//Build message
 	message := &sqs.SendMessageInput{
@@ -37,7 +37,7 @@ func (g *Gateway) SendMessage(order *entities.Order) (*entities.Order, error) {
 	}
 
 	messageResult, err := g.queue.SendMessage(message)
-	fmt.Printf("Message result: %s", messageResult)
+	fmt.Printf("Message result: %s\n", messageResult)
 
 	return order, nil
 }
