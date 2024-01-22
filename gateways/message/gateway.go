@@ -28,6 +28,7 @@ func (g *Gateway) SendMessage(order *entities.Order) (*entities.Order, error) {
 		return nil, err
 	}
 	stringMessage := string(jsonString)
+	fmt.Printf("Sending message: %s", jsonString)
 
 	//Build message
 	message := &sqs.SendMessageInput{
@@ -35,7 +36,8 @@ func (g *Gateway) SendMessage(order *entities.Order) (*entities.Order, error) {
 		MessageBody: &stringMessage,
 	}
 
-	g.queue.SendMessage(message)
+	messageResult, err := g.queue.SendMessage(message)
+	fmt.Printf("Message result: %s", messageResult)
 
 	return order, nil
 }
