@@ -61,6 +61,6 @@ func GetDynamoDbClient() *dynamodb.DynamoDB {
 
 	// Create DynamoDB client
 	svc := dynamodb.New(sess)
-
+	fmt.Printf("DynamoDB Connected: %v\n", svc)
 	return svc
 }
