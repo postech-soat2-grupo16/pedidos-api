@@ -170,6 +170,20 @@ func requestGETPedidoWithStatus() error {
 	return nil
 }
 
+func requestDELETEPedidoById() error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/orders/%s", baseURL, inputs.pedidoID), nil)
+	if err != nil {
+		return err
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	inputs.statusCode = res.StatusCode
+	return nil
+}
+
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^Parameter ID: (\d+)$`, parameterID)
 	ctx.Step(`^statusCode should be (\d+)$`, statusCodeShouldBe)
@@ -185,6 +199,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^request GET \/pedido with ClientID$`, requestGETPedidoWithClientID)
 	ctx.Step(`^request POST \/pedido$`, requestPOSTPedido)
 	ctx.Step(`^request GET \/pedido with Status$`, requestGETPedidoWithStatus)
+	ctx.Step(`^request DELETE \/pedido by id$`, requestDELETEPedidoById)
 }
 
 var inputs Input
