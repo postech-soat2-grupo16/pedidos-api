@@ -76,3 +76,11 @@ Feature: API Pedido
       | statusCode |
       | 200       |
 
+  Scenario Outline: Should delete order
+    Given get first order ID
+    When request DELETE /pedido by id
+    Then statusCode should be <statusCode>
+
+    Examples:
+      | statusCode |
+      |  204       |

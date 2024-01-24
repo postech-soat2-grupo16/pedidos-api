@@ -2,6 +2,7 @@ package order
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -58,9 +59,6 @@ func (g *Gateway) Delete(order *entities.Order) error {
 		Key: map[string]*dynamodb.AttributeValue{
 			"order_id": {
 				S: aws.String(order.OrderID),
-			},
-			"client_id": {
-				S: aws.String(order.ClientID),
 			},
 		},
 	}
