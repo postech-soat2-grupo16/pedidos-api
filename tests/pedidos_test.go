@@ -36,7 +36,7 @@ func setup() *http.Server {
 	os.Setenv("AWS_ACCESS_KEY_ID", "test")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "test")
 	db := api.SetupDB()
-	r := api.SetupRouter(db)
+	r := api.SetupRouter(db, nil)
 
 	server := http.Server{
 		Handler: r,

@@ -3,21 +3,36 @@ package message
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
-	"os"
 )
+
+type GatewayInterface interface {
+	SendMessage(order *entities.Order) (*entities.Order, error)
+}
 
 type Gateway struct {
 	queueURL string
 	queue    *sqs.SQS
 }
 
-func NewGateway(queueClient *sqs.SQS) *Gateway {
+type GatewayMock struct {
+}
+
+func NewGateway(queueClient *sqs.SQS) GatewayInterface {
+	if queueClient == nil {
+		return NewGatewayMock()
+	}
 	return &Gateway{
 		queueURL: os.Getenv("QUEUE_URL"),
 		queue:    queueClient,
 	}
+}
+
+func NewGatewayMock() *GatewayMock {
+	return &GatewayMock{}
 }
 
 func (g *Gateway) SendMessage(order *entities.Order) (*entities.Order, error) {
@@ -39,5 +54,9 @@ func (g *Gateway) SendMessage(order *entities.Order) (*entities.Order, error) {
 	messageResult, err := g.queue.SendMessage(message)
 	fmt.Printf("Message result: %s\n", messageResult)
 
+	return order, nil
+}
+
+func (g *GatewayMock) SendMessage(order *entities.Order) (*entities.Order, error) {
 	return order, nil
 }
