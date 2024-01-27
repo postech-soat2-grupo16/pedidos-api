@@ -15,8 +15,9 @@ type Order struct {
 }
 
 type OrderedItem struct {
-	ItemID   string `json:"item_id"`
-	Quantity int    `json:"quantity"`
+	ItemID   string  `json:"item_id"`
+	Price    float64 `json:"price"`
+	Quantity int     `json:"quantity"`
 }
 
 func (o *Order) orderItemToEntity() (itemList []entities.OrderedItem) {
