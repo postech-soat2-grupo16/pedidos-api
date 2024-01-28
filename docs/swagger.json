@@ -16,7 +16,7 @@
         "version": "1.0"
     },
     "paths": {
-        "/orders": {
+        "/pedidos": {
             "get": {
                 "produces": [
                     "application/json"
@@ -84,7 +84,7 @@
                 }
             }
         },
-        "/orders/healtcheck": {
+        "/pedidos/healtcheck": {
             "get": {
                 "tags": [
                     "Orders"
@@ -98,7 +98,7 @@
                 }
             }
         },
-        "/orders/{id}": {
+        "/pedidos/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -275,8 +275,20 @@
         "Order.OrderedItem": {
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
                 "item_id": {
                     "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
                 },
                 "quantity": {
                     "type": "integer"

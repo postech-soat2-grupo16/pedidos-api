@@ -27,7 +27,7 @@ resource "aws_lb_target_group" "tg_pedidos_api" {
     enabled             = true
     interval            = 30
     matcher             = "200-299"
-    path                = "/orders/healthcheck"
+    path                = "/pedidos/healthcheck"
     port                = "traffic-port"
     protocol            = "HTTP"
     timeout             = 5
@@ -48,7 +48,7 @@ resource "aws_lb_listener_rule" "listener_pedidos_api" {
 
   condition {
     path_pattern {
-      values = ["/orders*"]
+      values = ["/pedidos*"]
     }
   }
 

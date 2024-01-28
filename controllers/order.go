@@ -16,7 +16,7 @@ type OrderController struct {
 
 func NewOrderController(useCase interfaces.OrderUseCase, r *chi.Mux) *OrderController {
 	controller := OrderController{useCase: useCase}
-	r.Route("/orders", func(r chi.Router) {
+	r.Route("/pedidos", func(r chi.Router) {
 		r.Get("/", controller.GetAll)
 		r.Post("/", controller.Create)
 		r.Get("/{id}", controller.GetByID)
@@ -34,7 +34,7 @@ func NewOrderController(useCase interfaces.OrderUseCase, r *chi.Mux) *OrderContr
 //
 // @ID			health-check
 // @Success	200
-// @Router		/orders/healtcheck [get]
+// @Router		/pedidos/healtcheck [get]
 func (c *OrderController) Ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
@@ -50,7 +50,7 @@ func (c *OrderController) Ping(w http.ResponseWriter, r *http.Request) {
 //
 // @Success	200	{object}	order.Order
 // @Failure	500
-// @Router		/orders [get]
+// @Router		/pedidos [get]
 func (c *OrderController) GetAll(w http.ResponseWriter, r *http.Request) {
 	clientID := r.URL.Query().Get("client_id")
 	status := r.URL.Query().Get("status")
@@ -81,7 +81,7 @@ func (c *OrderController) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Param		id	path		string	true	"Order ID"
 // @Success	200	{object}	order.Order
 // @Failure	404
-// @Router		/orders/{id} [get]
+// @Router		/pedidos/{id} [get]
 func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
 	orderID := chi.URLParam(r, "id")
 	if orderID == "" {
@@ -109,7 +109,7 @@ func (c *OrderController) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param		data	body		order.Order	true	"Order payload"
 // @Success	200		{object}	order.Order
 // @Failure	400
-// @Router		/orders [post]
+// @Router		/pedidos [post]
 func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 	var orderModel order.Order
 	err := json.NewDecoder(r.Body).Decode(&orderModel)
@@ -143,7 +143,7 @@ func (c *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 // @Success	200		{object}	order.Order
 // @Failure	404
 // @Failure	400
-// @Router		/orders/{id} [put]
+// @Router		/pedidos/{id} [put]
 func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
 	orderID := chi.URLParam(r, "id")
 	if orderID == "" {
@@ -189,7 +189,7 @@ func (c *OrderController) Update(w http.ResponseWriter, r *http.Request) {
 // @Success	200		{object}	order.Order
 // @Failure	404
 // @Failure	400
-// @Router		/orders/{id} [patch]
+// @Router		/pedidos/{id} [patch]
 func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Request) {
 	orderID := chi.URLParam(r, "id")
 	if orderID == "" {
@@ -235,7 +235,7 @@ func (c *OrderController) PatchOrderStatus(w http.ResponseWriter, r *http.Reques
 // @Param		id	path	string	true	"Order ID"
 // @Success	204
 // @Failure	500
-// @Router		/orders/{id} [delete]
+// @Router		/pedidos/{id} [delete]
 func (c *OrderController) Delete(w http.ResponseWriter, r *http.Request) {
 	orderID := chi.URLParam(r, "id")
 	if orderID == "" {

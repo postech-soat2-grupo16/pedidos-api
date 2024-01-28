@@ -25,7 +25,7 @@ func TestGetAll_Error(t *testing.T) {
 	useCase.On("List", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, errUsecaseFailure)
 
 	res := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/orders", nil)
+	req, _ := http.NewRequest("GET", "/pedidos", nil)
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)
@@ -41,7 +41,7 @@ func TestGetByID_Error(t *testing.T) {
 	useCase.On("GetByID", mock.Anything).Return(nil, errUsecaseNotFound)
 
 	res := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/orders/1", nil)
+	req, _ := http.NewRequest("GET", "/pedidos/1", nil)
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)
@@ -57,7 +57,7 @@ func TestCreate_ErrorParse(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	badJSON := `{"invalid json`
-	req, _ := http.NewRequest("POST", "/orders", strings.NewReader(badJSON))
+	req, _ := http.NewRequest("POST", "/pedidos", strings.NewReader(badJSON))
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)
@@ -73,7 +73,7 @@ func TestCreate_ErrorUsecase(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	okJSON := `{}`
-	req, _ := http.NewRequest("POST", "/orders", strings.NewReader(okJSON))
+	req, _ := http.NewRequest("POST", "/pedidos", strings.NewReader(okJSON))
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)
@@ -89,7 +89,7 @@ func TestPUT_ErrorParse(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	badJSON := `{"invalid json`
-	req, _ := http.NewRequest("PUT", "/orders/1", strings.NewReader(badJSON))
+	req, _ := http.NewRequest("PUT", "/pedidos/1", strings.NewReader(badJSON))
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)
@@ -105,7 +105,7 @@ func TestPUT_ErrorUsecase(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	okJSON := `{}`
-	req, _ := http.NewRequest("PUT", "/orders/1", strings.NewReader(okJSON))
+	req, _ := http.NewRequest("PUT", "/pedidos/1", strings.NewReader(okJSON))
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)
@@ -121,7 +121,7 @@ func TestPATCH_ErrorParse(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	badJSON := `{"invalid json`
-	req, _ := http.NewRequest("PATCH", "/orders/1", strings.NewReader(badJSON))
+	req, _ := http.NewRequest("PATCH", "/pedidos/1", strings.NewReader(badJSON))
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)
@@ -137,7 +137,7 @@ func TestPATCH_ErrorUsecase(t *testing.T) {
 
 	res := httptest.NewRecorder()
 	okJSON := `{}`
-	req, _ := http.NewRequest("PATCH", "/orders/1", strings.NewReader(okJSON))
+	req, _ := http.NewRequest("PATCH", "/pedidos/1", strings.NewReader(okJSON))
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)

@@ -20,8 +20,16 @@ definitions:
     type: object
   Order.OrderedItem:
     properties:
+      category:
+        type: string
+      description:
+        type: string
       item_id:
         type: string
+      name:
+        type: string
+      price:
+        type: number
       quantity:
         type: integer
     type: object
@@ -39,7 +47,7 @@ info:
   title: Orders API
   version: "1.0"
 paths:
-  /orders:
+  /pedidos:
     get:
       operationId: get-all-orders
       parameters:
@@ -83,7 +91,7 @@ paths:
       summary: New order
       tags:
       - Orders
-  /orders/{id}:
+  /pedidos/{id}:
     delete:
       operationId: delete-order-by-id
       parameters:
@@ -178,7 +186,7 @@ paths:
       summary: Updates an order
       tags:
       - Orders
-  /orders/healtcheck:
+  /pedidos/healtcheck:
     get:
       operationId: health-check
       responses:
