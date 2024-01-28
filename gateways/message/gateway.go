@@ -3,6 +3,7 @@ package message
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -51,8 +52,9 @@ func (g *Gateway) SendMessage(order *entities.Order) (*entities.Order, error) {
 		MessageBody: &stringMessage,
 	}
 
+	log.Printf("Enviando Mensagem: %v\n", message)
 	messageResult, err := g.queue.SendMessage(message)
-	fmt.Printf("Message result: %s\n", messageResult)
+	log.Printf("Mensagem enviada Mensagem: %v\n", messageResult)
 
 	return order, nil
 }
