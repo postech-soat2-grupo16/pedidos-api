@@ -6,13 +6,36 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/cucumber/godog"
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 )
 
 func parameterID(pedidoID string) error {
+
+	var orderedItems []entities.OrderedItem
+	orderedItems = append(orderedItems, entities.OrderedItem{
+		ItemID:      "1",
+		Price:       10,
+		Quantity:    1,
+		Name:        "nome",
+		Category:    "categoria",
+		Description: "descricao",
+	})
+	newOrder := entities.Order{
+		OrderID:      pedidoID,
+		ClientID:     "123",
+		Status:       "CRIADO",
+		OrderedItems: orderedItems,
+		Notes:        "nota",
+		CreatedAt:    time.Now().String(),
+		UpdatedAt:    time.Now().String(),
+	}
+
+	inputs.order = newOrder
 	inputs.pedidoID = pedidoID
+
 	return nil
 }
 
@@ -211,4 +234,5 @@ type Input struct {
 	status     string
 	firstOrder entities.Order
 	body       io.ReadCloser
+	order      entities.Order
 }
