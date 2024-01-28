@@ -2,10 +2,12 @@ package tests
 
 import (
 	"errors"
+	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/postech-soat2-grupo16/pedidos-api/controllers"
@@ -145,4 +147,41 @@ func TestPATCH_ErrorUsecase(t *testing.T) {
 	c.ServeHTTP(res, req)
 
 	assert.Equal(t, http.StatusInternalServerError, res.Code, "Internal Server Error response is expected")
+}
+
+func TestGET_Success(t *testing.T) {
+	var orderedItems []entities.OrderedItem
+	var newOrder *entities.Order
+
+	orderedItems = append(orderedItems, entities.OrderedItem{
+		ItemID:      "1",
+		Price:       10,
+		Quantity:    1,
+		Name:        "nome",
+		Category:    "categoria",
+		Description: "descricao",
+	})
+	newOrder = &entities.Order{
+		OrderID:      "1",
+		ClientID:     "123",
+		Status:       "CRIADO",
+		OrderedItems: orderedItems,
+		Notes:        "nota",
+		CreatedAt:    time.Now().String(),
+		UpdatedAt:    time.Now().String(),
+	}
+
+	useCase := new(mocks.OrderUseCase)
+	useCase.On("GetByID", mock.Anything).Return(newOrder, nil)
+
+	res := httptest.NewRecorder()
+	okJSON := `{}`
+	req, _ := http.NewRequest("GET", "/pedidos/1", strings.NewReader(okJSON))
+
+	c := chi.NewRouter()
+	controllers.NewOrderController(useCase, c)
+
+	c.ServeHTTP(res, req)
+
+	assert.Equal(t, http.StatusOK, res.Code, "")
 }

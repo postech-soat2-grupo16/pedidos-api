@@ -40,7 +40,7 @@ func parameterID(pedidoID string) error {
 }
 
 func requestPOSTPedido() error {
-	pedidoItem := entities.Order{OrderID: inputs.pedidoID}
+	pedidoItem := inputs.order
 	body, err := json.Marshal(pedidoItem)
 	if err != nil {
 		return err
