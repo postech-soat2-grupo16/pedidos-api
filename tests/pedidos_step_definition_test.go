@@ -22,7 +22,7 @@ func requestPOSTPedido() error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/orders", baseURL), bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/pedidos", baseURL), bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func statusCodeShouldBe(statusCode int) error {
 }
 
 func getFirstOrderID() error {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/orders", baseURL), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/pedidos", baseURL), nil)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func parameterClientID(arg1 int) error {
 }
 
 func requestGETHealthcheck() error {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/orders/healthcheck", baseURL), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/pedidos/healthcheck", baseURL), nil)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func requestGETHealthcheck() error {
 }
 
 func requestGETPedidoById() error {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/orders/%s", baseURL, inputs.pedidoID), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/pedidos/%s", baseURL, inputs.pedidoID), nil)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func requestGETPedidoById() error {
 }
 
 func requestGETPedidoWithClientID() error {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/orders?client_id=%d", baseURL, inputs.clientID), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/pedidos?client_id=%d", baseURL, inputs.clientID), nil)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func requestPATCHPedidoWithStatus(arg1 string) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/orders/%s", baseURL, inputs.pedidoID), bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/pedidos/%s", baseURL, inputs.pedidoID), bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
@@ -135,7 +135,7 @@ func requestPUTPedidoWithStatus(arg1 string) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/orders/%s", baseURL, inputs.pedidoID), bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/pedidos/%s", baseURL, inputs.pedidoID), bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func parameterStatus(arg1 string) error {
 }
 
 func requestGETPedidoWithStatus() error {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/orders?status=%s", baseURL, inputs.status), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/pedidos?status=%s", baseURL, inputs.status), nil)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func requestGETPedidoWithStatus() error {
 }
 
 func requestDELETEPedidoById() error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/orders/%s", baseURL, inputs.pedidoID), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/pedidos/%s", baseURL, inputs.pedidoID), nil)
 	if err != nil {
 		return err
 	}

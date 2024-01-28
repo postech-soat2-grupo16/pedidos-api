@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/orders": {
+        "/pedidos": {
             "get": {
                 "produces": [
                     "application/json"
@@ -92,7 +92,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/orders/healtcheck": {
+        "/pedidos/healtcheck": {
             "get": {
                 "tags": [
                     "Orders"
@@ -106,7 +106,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/orders/{id}": {
+        "/pedidos/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -283,8 +283,20 @@ const docTemplate = `{
         "Order.OrderedItem": {
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
                 "item_id": {
                     "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
                 },
                 "quantity": {
                     "type": "integer"
