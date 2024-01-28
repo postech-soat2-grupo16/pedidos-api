@@ -26,8 +26,12 @@ type OrderedItem struct {
 func (o *Order) orderItemToEntity() (itemList []entities.OrderedItem) {
 	for _, orderedItem := range o.OrderedItems {
 		itemList = append(itemList, entities.OrderedItem{
-			ItemID:   orderedItem.ItemID,
-			Quantity: orderedItem.Quantity,
+			ItemID:      orderedItem.ItemID,
+			Price:       orderedItem.Price,
+			Quantity:    orderedItem.Quantity,
+			Name:        orderedItem.Name,
+			Category:    orderedItem.Category,
+			Description: orderedItem.Description,
 		})
 	}
 	return itemList
@@ -48,8 +52,12 @@ func (o *Order) ToUseCaseEntity() *entities.Order {
 func orderItemFromEntity(orderedItems []entities.OrderedItem) (itemList []OrderedItem) {
 	for _, orderedItem := range orderedItems {
 		itemList = append(itemList, OrderedItem{
-			ItemID:   orderedItem.ItemID,
-			Quantity: orderedItem.Quantity,
+			ItemID:      orderedItem.ItemID,
+			Price:       orderedItem.Price,
+			Quantity:    orderedItem.Quantity,
+			Name:        orderedItem.Name,
+			Category:    orderedItem.Category,
+			Description: orderedItem.Description,
 		})
 	}
 	return itemList
