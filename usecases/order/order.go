@@ -6,6 +6,7 @@ import (
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 	"github.com/postech-soat2-grupo16/pedidos-api/interfaces"
 	"github.com/postech-soat2-grupo16/pedidos-api/util"
+	"log"
 	"time"
 )
 
@@ -77,6 +78,7 @@ func (o UseCase) Create(order *entities.Order) (*entities.Order, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Pedido %s Criado!\n", order.OrderID)
 
 	return o.queueGateway.SendMessage(orderCreated)
 }
@@ -128,6 +130,7 @@ func (o UseCase) UpdateOrderStatus(orderID string, orderStatus entities.Status) 
 		return order, util.NewErrorDomain(fmt.Sprintf("Status %s is not valid", orderStatus))
 	}
 
+	log.Printf("Pedido %s patched. Novo Status: %s\n", order.OrderID, order.Status)
 	return o.orderGateway.Save(order)
 }
 
