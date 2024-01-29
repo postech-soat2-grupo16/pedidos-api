@@ -1,7 +1,10 @@
 package tests
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	Order "github.com/postech-soat2-grupo16/pedidos-api/adapters/order"
 	"github.com/postech-soat2-grupo16/pedidos-api/entities"
 	"net/http"
 	"net/http/httptest"
@@ -187,10 +190,13 @@ func TestGET_Success(t *testing.T) {
 }
 
 func TestPOST_Success(t *testing.T) {
-	var orderedItems []entities.OrderedItem
-	var newOrder *entities.Order
 
-	orderedItems = append(orderedItems, entities.OrderedItem{
+	var orderedItems []Order.OrderedItem
+	var newOrder *Order.Order
+	var ordItemEntity []entities.OrderedItem
+	var orderEntity *entities.Order
+
+	orderedItems = append(orderedItems, Order.OrderedItem{
 		ItemID:      "1",
 		Price:       10,
 		Quantity:    1,
@@ -198,7 +204,7 @@ func TestPOST_Success(t *testing.T) {
 		Category:    "categoria",
 		Description: "descricao",
 	})
-	newOrder = &entities.Order{
+	newOrder = &Order.Order{
 		OrderID:      "1",
 		ClientID:     "123",
 		Status:       "CRIADO",
@@ -208,12 +214,30 @@ func TestPOST_Success(t *testing.T) {
 		UpdatedAt:    time.Now().String(),
 	}
 
+	ordItemEntity = append(ordItemEntity, entities.OrderedItem{
+		ItemID:      "1",
+		Price:       10,
+		Quantity:    1,
+		Name:        "nome",
+		Category:    "categoria",
+		Description: "descricao",
+	})
+	orderEntity = &entities.Order{
+		OrderID:      "1",
+		ClientID:     "123",
+		Status:       "CRIADO",
+		OrderedItems: ordItemEntity,
+		Notes:        "nota",
+		CreatedAt:    time.Now().String(),
+		UpdatedAt:    time.Now().String(),
+	}
+	body, _ := json.Marshal(newOrder)
+
 	useCase := new(mocks.OrderUseCase)
-	useCase.On("Create", mock.Anything).Return(newOrder, nil)
+	useCase.On("Create", mock.Anything).Return(orderEntity, nil)
 
 	res := httptest.NewRecorder()
-	okJSON := `{}`
-	req, _ := http.NewRequest("POST", "/pedidos", strings.NewReader(okJSON))
+	req, _ := http.NewRequest("POST", "/pedidos", bytes.NewBuffer(body))
 
 	c := chi.NewRouter()
 	controllers.NewOrderController(useCase, c)
