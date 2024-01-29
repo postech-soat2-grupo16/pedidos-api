@@ -185,3 +185,40 @@ func TestGET_Success(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, res.Code, "")
 }
+
+func TestPOST_Success(t *testing.T) {
+	var orderedItems []entities.OrderedItem
+	var newOrder *entities.Order
+
+	orderedItems = append(orderedItems, entities.OrderedItem{
+		ItemID:      "1",
+		Price:       10,
+		Quantity:    1,
+		Name:        "nome",
+		Category:    "categoria",
+		Description: "descricao",
+	})
+	newOrder = &entities.Order{
+		OrderID:      "1",
+		ClientID:     "123",
+		Status:       "CRIADO",
+		OrderedItems: orderedItems,
+		Notes:        "nota",
+		CreatedAt:    time.Now().String(),
+		UpdatedAt:    time.Now().String(),
+	}
+
+	useCase := new(mocks.OrderUseCase)
+	useCase.On("Create", mock.Anything).Return(newOrder, nil)
+
+	res := httptest.NewRecorder()
+	okJSON := `{}`
+	req, _ := http.NewRequest("POST", "/pedidos", strings.NewReader(okJSON))
+
+	c := chi.NewRouter()
+	controllers.NewOrderController(useCase, c)
+
+	c.ServeHTTP(res, req)
+
+	assert.Equal(t, http.StatusCreated, res.Code, "")
+}
